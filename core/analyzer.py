@@ -26,6 +26,30 @@ from ..domain import PluginMetadata, RenderNode, InternalCFG, TypstPluginConfig
 
 
 class BaseAnalyzer:
+    CHINESE_PLUGIN_NAMES: dict[str, str] = {
+        "ApiBalanceChecker": "余额查询",
+        "CardShopMvp": "发卡商城",
+        "CustomBurstSender": "自定义连发",
+        "DailyCheckin": "每日签到",
+        "PetFeeder": "喂食系统",
+        "RegexImageReplace": "图片替换",
+        "TutorialImage": "教程图片",
+        "WJXSignupScript": "问卷星报名",
+        "WorkSupervisor": "工作监督",
+        "astrbot_plugin_api_balance_checker": "余额查询",
+        "astrbot_plugin_card_shop_mvp": "发卡商城",
+        "astrbot_plugin_custom_burst_sender": "自定义连发",
+        "astrbot_plugin_daily_checkin": "每日签到",
+        "astrbot_plugin_feed_pet": "喂食系统",
+        "astrbot_plugin_gitee_aiimg": "AI绘图",
+        "astrbot_plugin_group_keyword_reply": "关键词回复",
+        "astrbot_plugin_market_watch": "商品监控",
+        "astrbot_plugin_regex_image_replace": "图片替换",
+        "astrbot_plugin_tutorial_image": "教程图片",
+        "astrbot_plugin_wjx_signup_script": "问卷星报名",
+        "astrbot_plugin_work_supervisor": "工作监督",
+    }
+
     def __init__(self, context: Context, config: TypstPluginConfig):
         self.context = context
         self.cfg = config
@@ -152,7 +176,12 @@ class BaseAnalyzer:
             display = None
 
         version = str(getattr(star_meta, "version", "")) or ""
-        desc = str(getattr(star_meta, "desc", "")) or ""
+        desc = str(
+            getattr(star_meta, "desc", None)
+            or getattr(star_meta, "description", None)
+            or ""
+        )
+        display = self._friendly_display_name(safe_name, display, desc)
 
         return {
             "name": safe_name,
@@ -161,6 +190,47 @@ class BaseAnalyzer:
             "desc": desc,
             "raw_module": raw_module,  # handler 查找
         }
+
+    def _friendly_display_name(
+        self, safe_name: str, display: str | None, desc: str
+    ) -> str | None:
+        """返回面向群用户的中文插件名，便于一级菜单阅读和搜索。"""
+        alias = self.CHINESE_PLUGIN_NAMES.get(safe_name)
+        if alias:
+            return alias
+
+        if display and self._has_cjk(display):
+            return display
+
+        desc_name = self._display_name_from_desc(desc)
+        if desc_name:
+            return desc_name
+
+        return display
+
+    def _display_name_from_desc(self, desc: str) -> str | None:
+        """从中文描述里兜底生成短名称，避免一级菜单裸露英文插件 ID。"""
+        if not desc or not self._has_cjk(desc):
+            return None
+
+        first_clause = desc.replace("\n", " ").split("，")[0].split("。")[0].strip()
+        if not first_clause:
+            return None
+
+        replacements = (
+            ("AstrBot", ""),
+            ("Bot", ""),
+            ("API Key", "密钥"),
+            ("LLM", "模型"),
+        )
+        for old, new in replacements:
+            first_clause = first_clause.replace(old, new)
+
+        first_clause = " ".join(first_clause.split())
+        return first_clause[:12] if first_clause else None
+
+    def _has_cjk(self, text: str | None) -> bool:
+        return bool(text and any("\u4e00" <= ch <= "\u9fff" for ch in text))
 
 
 class CommandAnalyzer(BaseAnalyzer):
