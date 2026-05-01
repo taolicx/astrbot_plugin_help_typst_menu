@@ -231,7 +231,7 @@ class HelpTypst(Star):
             yield r
 
     def _resolve_menu_query(self, query: str) -> str:
-        """支持用一级菜单序号进入插件详情，例如：菜单 3。"""
+        """支持用一级菜单序号进入插件详情，例如：helps 3。"""
         cleaned = query.strip()
         if not cleaned.isdigit():
             return cleaned
@@ -274,18 +274,6 @@ class HelpTypst(Star):
         async for r in self._handle_request(
             event, self.cmd_analyzer, "AstrBot 指令菜单", "command", query
         ):
-            yield r
-
-    @filter.command("菜单")
-    async def show_cn_menu(self, event: AstrMessageEvent, query: str = ""):
-        """中文别名：一级菜单/二级详情。"""
-        async for r in self.show_menu(event, query):
-            yield r
-
-    @filter.command("menu")
-    async def show_en_menu(self, event: AstrMessageEvent, query: str = ""):
-        """英文别名：一级菜单/二级详情。"""
-        async for r in self.show_menu(event, query):
             yield r
 
     @filter.command("events")

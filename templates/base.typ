@@ -539,7 +539,7 @@
 #let render_plugin_index() = {
   let prefixes = data.at("prefixes", default: ("/"))
   let prefix_str = if type(prefixes) == array and prefixes.len() > 0 { prefixes.at(0) } else { "/" }
-  let hint_cmd = prefix_str + "菜单 插件名"
+  let hint_cmd = prefix_str + "helps 插件名"
 
   align(center)[
     #block(
