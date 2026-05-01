@@ -128,8 +128,8 @@ class TextMenuPlugin(Star):
             [
                 "",
                 "查看详情：",
-                "发送 /helps 序号，例如 /helps 1",
-                "也可以发送 /helps 插件名称，例如 /helps 每日签到",
+                "发送 /插件菜单 序号，例如 /插件菜单 1",
+                "也可以发送 /插件菜单 插件名称，例如 /插件菜单 每日签到",
             ]
         )
         return "\n".join(lines)
@@ -227,7 +227,7 @@ class TextMenuPlugin(Star):
             yield r
 
     def _resolve_menu_query(self, query: str) -> str:
-        """支持用一级菜单序号进入插件详情，例如：helps 3。"""
+        """支持用一级菜单序号进入插件详情，例如：插件菜单 3。"""
         cleaned = query.strip()
         if not cleaned.isdigit():
             return cleaned
@@ -258,7 +258,7 @@ class TextMenuPlugin(Star):
             logger.warning(f"[TextMenu] 获取唤醒词失败，使用默认值 '/': {e}")
             self.prefixes = ["/"]
 
-    @filter.command("helps")
+    @filter.command("插件菜单")
     async def show_menu(self, event: AstrMessageEvent, query: str = ""):
         """显示指令菜单"""
         if not query or not query.strip():
