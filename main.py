@@ -7,7 +7,7 @@ from astrbot.api.star import Context, Star, StarTools
 
 from .domain import InternalCFG, PluginMetadata, RenderNode, TextMenuConfig
 from .utils import HelpHint, MsgRecall
-from .core import CommandAnalyzer, EventAnalyzer, FilterAnalyzer
+from .core import CommandAnalyzer
 
 
 class TextMenuPlugin(Star):
@@ -28,8 +28,6 @@ class TextMenuPlugin(Star):
 
         # 4. 分析器
         self.cmd_analyzer = CommandAnalyzer(context, self.plugin_config)
-        self.evt_analyzer = EventAnalyzer(context, self.plugin_config)
-        self.flt_analyzer = FilterAnalyzer(context, self.plugin_config)
 
         self.prefixes: list[str] = []
 
@@ -271,21 +269,5 @@ class TextMenuPlugin(Star):
         query = self._resolve_menu_query(query)
         async for r in self._handle_request(
             event, self.cmd_analyzer, "AstrBot 指令菜单", "command", query
-        ):
-            yield r
-
-    @filter.command("events")
-    async def show_events(self, event: AstrMessageEvent, query: str = ""):
-        """显示事件监听列表"""
-        async for r in self._handle_request(
-            event, self.evt_analyzer, "AstrBot 事件监听", "event", query
-        ):
-            yield r
-
-    @filter.command("filters")
-    async def show_filters(self, event: AstrMessageEvent, query: str = ""):
-        """显示过滤器详情"""
-        async for r in self._handle_request(
-            event, self.flt_analyzer, "AstrBot 过滤器分析", "filter", query
         ):
             yield r
