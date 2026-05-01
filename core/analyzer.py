@@ -22,7 +22,7 @@ from astrbot.core.star.filter.event_message_type import (
 )
 from astrbot.core.agent.mcp_client import MCPTool
 
-from ..domain import PluginMetadata, RenderNode, InternalCFG, TypstPluginConfig
+from ..domain import PluginMetadata, RenderNode, InternalCFG, TextMenuConfig
 
 
 class BaseAnalyzer:
@@ -50,7 +50,7 @@ class BaseAnalyzer:
         "astrbot_plugin_work_supervisor": "工作监督",
     }
 
-    def __init__(self, context: Context, config: TypstPluginConfig):
+    def __init__(self, context: Context, config: TextMenuConfig):
         self.context = context
         self.cfg = config
 
@@ -95,7 +95,7 @@ class BaseAnalyzer:
             return filtered_plugins
 
         except Exception as e:
-            logger.error(f"[HelpTypst] 分析失败: {e}", exc_info=True)
+            logger.error(f"[TextMenu] 分析失败: {e}", exc_info=True)
             return []
 
     def _is_match(
@@ -242,7 +242,7 @@ class CommandAnalyzer(BaseAnalyzer):
         all_stars = self.context.get_all_stars()
 
         logger.info(
-            f"[HelpTypst] 开始分析指令。共扫描到 {len(all_stars)} 个已加载插件。"
+            f"[TextMenu] 开始分析指令。共扫描到 {len(all_stars)} 个已加载插件。"
         )
 
         for star_meta in all_stars:
@@ -261,7 +261,7 @@ class CommandAnalyzer(BaseAnalyzer):
             # 模块路径
             if not raw_module:
                 logger.debug(
-                    f"[HelpTypst] 插件 {safe_name} 缺失 module_path，无法关联指令，已跳过。"
+                    f"[TextMenu] 插件 {safe_name} 缺失 module_path，无法关联指令，已跳过。"
                 )
                 continue
 
@@ -278,7 +278,7 @@ class CommandAnalyzer(BaseAnalyzer):
             if not handlers:
                 # 防御性跳过 + 提供调试
                 logger.debug(
-                    f"[HelpTypst] 插件 {safe_name} ({raw_module}) 未注册任何指令 Handler。"
+                    f"[TextMenu] 插件 {safe_name} ({raw_module}) 未注册任何指令 Handler。"
                 )
                 continue
 
@@ -296,15 +296,15 @@ class CommandAnalyzer(BaseAnalyzer):
                         )
                     )
                 else:
-                    logger.debug(f"[HelpTypst] 插件 {safe_name} 指令树构建结果为空。")
+                    logger.debug(f"[TextMenu] 插件 {safe_name} 指令树构建结果为空。")
             except Exception as e:
-                logger.warning(f"[HelpTypst] 处理插件 {safe_name} 时发生异常: {e}")
+                logger.warning(f"[TextMenu] 处理插件 {safe_name} 时发生异常: {e}")
                 continue
 
         # 排序
         results.sort(key=lambda x: (x.display_name is None, x.name))
 
-        logger.info(f"[HelpTypst] 指令分析完成。找到 {len(results)} 个有指令的插件。")
+        logger.info(f"[TextMenu] 指令分析完成。找到 {len(results)} 个有指令的插件。")
         return results
 
     def _build_plugin_command_tree(
@@ -326,7 +326,7 @@ class CommandAnalyzer(BaseAnalyzer):
                         nodes.append(node)
                 except Exception as e:
                     logger.warning(
-                        f"[HelpTypst] 解析指令组 {handler.handler_name} 失败: {e}"
+                        f"[TextMenu] 解析指令组 {handler.handler_name} 失败: {e}"
                     )
 
         # 2. 独立指令
@@ -343,7 +343,7 @@ class CommandAnalyzer(BaseAnalyzer):
                         nodes.append(node)
                 except Exception as e:
                     logger.warning(
-                        f"[HelpTypst] 解析指令 {handler.handler_name} 失败: {e}"
+                        f"[TextMenu] 解析指令 {handler.handler_name} 失败: {e}"
                     )
 
         self._sort_nodes(nodes)

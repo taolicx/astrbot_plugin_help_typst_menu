@@ -1,11 +1,6 @@
 from .schemas import RenderNode, PluginMetadata
 from .constants import InternalCFG, DefaultCFG, RenderMode
-from .config import (
-    RenderingConfig,
-    ThemePreset,
-    AppearanceConfig,
-    TypstPluginConfig,
-)
+from .config import TextMenuConfig
 
 __all__ = [
     "RenderNode",
@@ -13,8 +8,5 @@ __all__ = [
     "InternalCFG",
     "DefaultCFG",
     "RenderMode",
-    "RenderingConfig",
-    "ThemePreset",
-    "AppearanceConfig",
-    "TypstPluginConfig",
+    "TextMenuConfig",
 ]
