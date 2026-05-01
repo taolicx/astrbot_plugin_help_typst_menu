@@ -172,6 +172,11 @@ class TypstLayout:
         font_list: list[str],
     ) -> dict[str, Any]:
         """瀑布流分发逻辑"""
+        if mode == "plugin_index":
+            return self._generate_plugin_index_payload(
+                plugins, title, mode, prefixes, font_list
+            )
+
         giants = []
         complex_plugins = []
         single_node_plugins = []
@@ -242,6 +247,54 @@ class TypstLayout:
             "columns": cols_data,
             "singles": single_node_plugins,
         }
+
+    def _generate_plugin_index_payload(
+        self,
+        plugins: list[PluginMetadata],
+        title: str,
+        mode: str,
+        prefixes: list[str],
+        font_list: list[str],
+    ) -> dict[str, Any]:
+        """Build the lightweight first-level menu shown before a plugin is selected."""
+        menu_items = []
+        for index, plugin in enumerate(plugins, start=1):
+            menu_items.append(
+                {
+                    "index": index,
+                    "name": plugin.name,
+                    "display_name": plugin.display_name or plugin.name,
+                    "version": plugin.version,
+                    "desc": plugin.desc,
+                    "command_count": self._count_nodes(plugin.nodes),
+                }
+            )
+
+        cols_data = [[] for _ in range(2)]
+        for index, item in enumerate(menu_items):
+            cols_data[index % 2].append(item)
+
+        return {
+            "title": title,
+            "mode": mode,
+            "prefixes": prefixes,
+            "fonts": font_list,
+            "plugin_count": len(plugins),
+            "menu_columns": cols_data,
+            "giants": [],
+            "columns": [],
+            "singles": [],
+        }
+
+    def _count_nodes(self, nodes: list[RenderNode]) -> int:
+        """Count leaf commands in a command tree for the menu index."""
+        total = 0
+        for node in nodes:
+            if node.children:
+                total += self._count_nodes(node.children)
+            else:
+                total += 1
+        return total
 
     def _estimate_height(self, nodes: list[RenderNode]) -> int:
         """高度估算器(暂硬编码，等待完善模板逻辑)"""

@@ -8,6 +8,7 @@ class InternalCFG:
 
     # 映射
     CACHE_FILES: dict[str, str] = {
+        "plugin_index": "cache_menu_plugin_index",
         "command": "cache_menu_command",
         "event": "cache_menu_event",
         "filter": "cache_menu_filter",

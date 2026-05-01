@@ -535,6 +535,63 @@
   }
 }
 
+// --- 一级插件索引菜单 ---
+#let render_plugin_index() = {
+  let prefixes = data.at("prefixes", default: ("/"))
+  let prefix_str = if type(prefixes) == array and prefixes.len() > 0 { prefixes.at(0) } else { "/" }
+  let hint_cmd = prefix_str + "菜单 插件名"
+
+  align(center)[
+    #block(
+      width: 62%,
+      fill: white,
+      radius: 8pt,
+      inset: (x: 20pt, y: 16pt),
+      stroke: 1pt + c_box_stroke,
+    )[
+      #text(size: 22pt, weight: "black", fill: c_text_primary)[功能菜单]
+      #v(4pt)
+      #text(size: 10pt, fill: c_desc_text)[发送 #hint_cmd 查看某个插件的详细指令]
+      #v(8pt)
+      #line(length: 100%, stroke: 1pt + c_box_stroke)
+      #v(10pt)
+
+      #grid(
+        columns: (1fr, 1fr),
+        gutter: 18pt,
+        ..data.at("menu_columns", default: ()).map(col => {
+          stack(
+            spacing: 7pt,
+            ..col.map(item => {
+              grid(
+                columns: (auto, 1fr, auto),
+                gutter: 6pt,
+                align(right)[
+                  #text(size: 9pt, fill: c_plugin_id)[#item.index]
+                ],
+                align(left)[
+                  #text(size: 13pt, weight: "bold", fill: c_leaf_text)[#hl(item.display_name)]
+                  #if item.name != item.display_name {
+                    linebreak()
+                    text(size: 7.5pt, fill: c_desc_text)[@#hl(breakable_id(item.name))]
+                  }
+                ],
+                align(right + horizon)[
+                  #if item.command_count > 0 {
+                    box(fill: c_ver_bg, radius: 4pt, inset: (x: 5pt, y: 2pt))[
+                      #text(size: 7pt, fill: c_ver_text, weight: "bold")[#item.command_count 条]
+                    ]
+                  }
+                ]
+              )
+            })
+          )
+        })
+      )
+    ]
+  ]
+}
+
 // === 🏭 组装视图 ===
 
 // --- 主布局 ---
@@ -548,31 +605,35 @@
   ]
 ]
 
-// 语法指引
-#if data.at("mode", default: "command") == "command" {
-  render_syntax_guide()
+#if data.at("mode", default: "command") == "plugin_index" {
+  render_plugin_index()
 } else {
-  v(15pt) // 如果不是指令模式，补回一点间距
+  // 语法指引
+  if data.at("mode", default: "command") == "command" {
+    render_syntax_guide()
+  } else {
+    v(15pt) // 如果不是指令模式，补回一点间距
+  }
+
+  // --- 巨型块 --- 
+  if data.giants.len() > 0 {
+    stack(spacing: 10pt, ..data.giants.map(plugin => plugin_card(plugin, mode: "giant")))
+    v(15pt)
+  }
+
+  // --- Columns ---
+  grid(
+    columns: (1fr, 1fr, 1fr), gutter: 15pt,
+    ..data.columns.map(col_plugins => {
+      align(top)[
+        #stack(spacing: 10pt, ..col_plugins.map(plugin => plugin_card(plugin, mode: "standard")))
+      ]
+    })
+  )
+
+  // --- Singles ---
+  render_singles_section(data.singles)
 }
-
-// --- 巨型块 --- 
-#if data.giants.len() > 0 {
-  stack(spacing: 10pt, ..data.giants.map(plugin => plugin_card(plugin, mode: "giant")))
-  v(15pt)
-}
-
-// --- Columns ---
-#grid(
-  columns: (1fr, 1fr, 1fr), gutter: 15pt,
-  ..data.columns.map(col_plugins => {
-    align(top)[
-      #stack(spacing: 10pt, ..col_plugins.map(plugin => plugin_card(plugin, mode: "standard")))
-    ]
-  })
-)
-
-// --- Singles ---
-#render_singles_section(data.singles)
 
 #v(20pt)
 #align(center + bottom)[
